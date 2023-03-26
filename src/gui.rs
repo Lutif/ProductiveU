@@ -3,31 +3,64 @@ use eframe::{
   egui::{
     Vec2,
     CentralPanel,
-    ScrollArea, CollapsingHeader
+    ScrollArea, CollapsingHeader, self
   }, 
   run_native
 };
 use crate::db::{Database,AppEntry,};
+use std::time::{Instant, Duration};
+use std::hash::{Hash, Hasher};
+use std::collections::hash_map::DefaultHasher;
 
 pub struct ProductiveU{
     app_entries: Vec<AppEntry>,
+    last_update: Instant,
+}
+const REFRESH_RATE: u64 = 6;//in seconds
+
+fn get_time_formated(app_entry: &AppEntry) -> (String, String, String) {
+  let hours = app_entry.seconds_used / 3600;
+  let minutes = (app_entry.seconds_used % 3600) / 60;
+  let seconds = (app_entry.seconds_used % 3600) % 60;
+  //show time two digits for each unit
+  let hours = format!("{:02}", hours);
+  let minutes = format!("{:02}", minutes);
+  let seconds = format!("{:02}", seconds);
+  (hours, minutes, seconds)
+}
+
+fn get_app_name_color(app_entry: &AppEntry) -> egui::Color32 {
+  let mut hasher = DefaultHasher::new();
+  app_entry.app_name.hash(&mut hasher);
+  let app_name_hash = hasher.finish();
+  let r = (app_name_hash as u32 % 256) as u8;
+  let g = ((app_name_hash >> 8) as u32 % 256) as u8;
+  let b = ((app_name_hash >> 16) as u32 % 256) as u8;
+  let color = egui::Color32::from_rgb(r, g, b);
+  color
 }
 
 impl ProductiveU {
     pub fn new() -> Self {
-    //insert 10 dummy app entries
     let mut app_entries = Database::new().unwrap().read_all().unwrap();
     app_entries.sort_by(|a, b| b.date.cmp(&a.date));
-        Self { app_entries }
+        Self { app_entries , last_update: Instant::now() }
     }
-    fn update_app_entries(&mut self, update:Vec<AppEntry>) {
-        //update app_entries with the new data update
+    fn update_app_entries(&mut self) {
+        let update = Database::new().unwrap().read_all().unwrap();
         self.app_entries = update;
     }
   }
 
 impl App for ProductiveU {
-    fn update(&mut self, ctx: &eframe::egui::CtxRef, frame: &mut eframe::epi::Frame<'_>) {
+    fn update(&mut self, ctx: &eframe::egui::CtxRef, _frame: &mut eframe::epi::Frame<'_> ) {
+      
+      let now = Instant::now();
+      if now.duration_since(self.last_update) > Duration::from_secs(REFRESH_RATE) {
+        self.update_app_entries();
+        self.last_update = now;
+      }
+      
       CentralPanel::default().show(ctx, |ui| {
         ScrollArea::auto_sized().show(ui, |ui| {
           //get all dates from app_entries
@@ -39,7 +72,7 @@ impl App for ProductiveU {
           });
           //create separate panels for each date
           dates.iter().for_each(|date| {
-            let mut group = CollapsingHeader::new(date.clone()).default_open(&dates[0]==date).show(ui, |ui| {
+            CollapsingHeader::new(date.clone()).default_open(&dates[0]==date).show(ui, |ui| {
             //get all app_entries for each date
             let mut app_entries = Vec::new();
             self.app_entries.iter().for_each(|app_entry| {
@@ -52,12 +85,13 @@ impl App for ProductiveU {
             //create a panel for each app_entry
             app_entries.iter().for_each(|app_entry| {
               ui.columns(3, |columns| {
-                columns[0].label(app_entry.app_name.clone());
-                columns[1].label(app_entry.seconds_used.to_string());
-                // columns[2].label(app_entry.date.clone());
+                //use random color for label text
+                let color = get_app_name_color(app_entry);             let text_style = egui::TextStyle::Body;
+                columns[0].add(egui::Label::new(app_entry.app_name.clone()).text_style(text_style).text_color(color));
+                let (hours, minutes, seconds) = get_time_formated(app_entry);
+                columns[1].add(egui::Label::new(format!("{}:{}:{}", hours, minutes, seconds)).text_style(text_style).text_color(egui::Color32::WHITE));
               });
             });
-            
           });
           });       
         });
@@ -79,6 +113,7 @@ impl App for ProductiveU {
     }
   
 }
+
 pub fn ui() {
     let app = ProductiveU::new();
     let mut win_option = eframe::NativeOptions::default();

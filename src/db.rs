@@ -3,6 +3,7 @@ use rusqlite::{Connection, Result};
 use chrono::Local;
 const DATABASE : &str = "productiveU.db";
 #[derive(Debug)]
+#[derive(Clone)]
 pub struct AppEntry {
     pub id: i32,
     pub app_name: String,
@@ -12,17 +13,6 @@ pub struct AppEntry {
 
 pub struct Database {
     conn: Connection,
-}
-impl AppEntry {
-//implement clone for app entry
-pub fn clone(&self) -> AppEntry {
-    AppEntry {
-        id: self.id,
-        app_name: self.app_name.clone(),
-        date: self.date.clone(),
-        seconds_used: self.seconds_used,
-    }
-}
 }
 impl Database {
     pub fn new() -> Result<Self> {

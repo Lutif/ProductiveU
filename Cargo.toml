@@ -12,4 +12,5 @@ cairo-rs = "0.17.0"
 chrono = "0.4.23"
 eframe = "0.14.0"
 gtk = { version = "0.6.2", package = "gtk4", features = ["v4_8"] }
+rand = "0.8.5"
 rusqlite= "0.26.3"
