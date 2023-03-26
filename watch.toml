@@ -1,0 +1,6 @@
+[watch]
+# The paths to watch for changes
+roots = ["src"]
+
+# The command to run when a change is detected
+command = "cargo run"

@@ -3,6 +3,14 @@ name = "ProductiveU"
 version = "0.1.0"
 edition = "2021"
 
+[dev-dependencies]
+cargo-watch = "8.1.1"
+
+
 [dependencies]
+cairo-rs = "0.17.0"
 chrono = "0.4.23"
+eframe = "0.14.0"
+gtk = { version = "0.6.2", package = "gtk4", features = ["v4_8"] }
+rand = "0.8.5"
 rusqlite= "0.26.3"
