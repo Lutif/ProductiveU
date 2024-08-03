@@ -53,6 +53,7 @@ fn track_and_print ()  -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let results: Vec<(String, String)> = db.read_all_for_date(today.to_owned())?;
+    println!("------------------------------------");
     for result in results {
         println!("{} => {}", result.0, result.1);
     }
