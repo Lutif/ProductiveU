@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dev-dependencies]
-cargo-watch = "8.1.1"
 
 
 [dependencies]
 chrono = "0.4.23"
+iced = "0.12.1"
 rusqlite= "0.26.3"
