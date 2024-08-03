@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build and package
-        run: cargo build --release && tar -czvf ProductiveU.tar.gz target/release/ProductiveU
+        run: cargo build --release && tar -czvf productive_u.tar.gz target/release/productive_u
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
@@ -30,6 +30,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./ProductiveU.tar.gz
-          asset_name: ProductiveU.tar.gz
+          asset_path: ./productive_u.tar.gz
+          asset_name: productive_u.tar.gz
           asset_content_type: application/gzip
